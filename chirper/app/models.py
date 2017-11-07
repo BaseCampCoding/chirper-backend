@@ -44,7 +44,7 @@ class ChirperUser(models.Model):
         return chirper
 
     def chirp(self, message):
-        '`ChirperUser.chirp will create a new chirp with the provided message and `self` as the author`'
+        '`ChirperUser.chirp` will create a new chirp with the provided message and `self` as the author'
         return Chirp.objects.create(author=self, message=message)
 
 

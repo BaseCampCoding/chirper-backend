@@ -18,3 +18,14 @@ class TestChirperUserSignup(TestCase):
         with self.assertRaises(IntegrityError):
             ChirperUser.signup('Not Nate', 'natec425', 'bar@example.com',
                                'badpass2')
+
+
+class TestChirperUserCanChirp(TestCase):
+    def test_chirper_user_can_chirp(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        chirp = chirper.chirp("Hello World")
+
+        self.assertEqual(chirp.author, chirper)
+        self.assertEqual(chirp.message, "Hello World")

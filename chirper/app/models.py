@@ -31,6 +31,10 @@ class ChirperUser(models.Model):
         user = User.objects.create_user(username, email, password)
         return ChirperUser.objects.create(user=user, name=name)
 
+    def chirp(self, message):
+        '`ChirperUser.chirp will create a new chirp with the provided message and `self` as the author`'
+        return Chirp.objects.create(author=self, message=message)
+
 
 class Chirp(models.Model):
     message = models.CharField(max_length=280)

@@ -3,7 +3,7 @@ from django.db.utils import IntegrityError
 from app.models import ChirperUser
 
 
-class TestChirperUserSignup(TestCase):
+class TestModels(TestCase):
     def test_can_sign_up(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
@@ -19,8 +19,6 @@ class TestChirperUserSignup(TestCase):
             ChirperUser.signup('Not Nate', 'natec425', 'bar@example.com',
                                'badpass2')
 
-
-class TestChirperUserCanChirp(TestCase):
     def test_chirper_user_can_chirp(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')

@@ -47,8 +47,16 @@ class ChirperUser(models.Model):
         '`ChirperUser.chirp` will create a new chirp with the provided message and `self` as the author'
         return Chirp.objects.create(author=self, message=message)
 
+    def feed(self):
+        '`ChirperUser.feed` returns a queryset representing all `Chirp`s that belong to `self`\'s feed.'
+        return self.chirp_set.all().order_by('date')
+
 
 class Chirp(models.Model):
     message = models.CharField(max_length=280)
     author = models.ForeignKey(ChirperUser, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return '{} ({}): {}'.format(self.author.username, self.date,
+                                    self.message)

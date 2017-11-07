@@ -49,6 +49,18 @@ class TestModels(TestCase):
         self.assertEqual(chirp.author, chirper)
         self.assertEqual(chirp.message, "Hello World")
 
+    def test_feed_with_chirps(self):
+
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        hello_chirp = chirper.chirp("Hello World")
+        game_over_chirp = chirper.chirp("Game Over")
+
+        self.assertQuerysetEqual(
+            chirper.feed(), [hello_chirp, game_over_chirp],
+            transform=lambda x: x)
+
 
 class TestViews(TestCase):
     def test_successful_signup(self):

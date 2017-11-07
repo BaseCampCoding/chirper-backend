@@ -1,10 +1,12 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.core.validators import MinLengthValidator
 
 
 class ChirperUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, validators=[MinLengthValidator(2)])
     description = models.CharField(max_length=300, blank=True)
     location = models.CharField(max_length=50, blank=True)
     website = models.URLField(blank=True)
@@ -28,8 +30,18 @@ class ChirperUser(models.Model):
         Any errors during `User` creation or `ChirperUser` creation are unhandled by this method
         and will bubble up. This may change in the future.
         '''
-        user = User.objects.create_user(username, email, password)
-        return ChirperUser.objects.create(user=user, name=name)
+        user = User(username=username, email=email)
+        user.set_password(password)
+        user.full_clean()
+        user.save()
+        chirper = ChirperUser(user=user, name=name)
+        try:
+            chirper.full_clean()
+        except ValidationError as e:
+            user.delete()
+            raise e
+        chirper.save()
+        return chirper
 
     def chirp(self, message):
         '`ChirperUser.chirp will create a new chirp with the provided message and `self` as the author`'

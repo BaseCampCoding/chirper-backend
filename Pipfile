@@ -11,6 +11,7 @@ django = "*"
 gunicorn = "*"
 dj-database-url = "*"
 "psycopg2" = "*"
+newrelic = "*"
 
 
 [requires]

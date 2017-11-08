@@ -1,1 +1,1 @@
-web: gunicorn chirper.wsgi
+web: newrelic-admin run-program gunicorn chirper.wsgi

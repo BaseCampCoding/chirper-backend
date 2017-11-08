@@ -122,3 +122,9 @@ def login(request):
         return JsonResponse({
             'error': 'INVALID_USERNAME_PASSWORD'
         }, HTTPStatus.UNAUTHORIZED)
+
+
+@require_POST
+def logout(request):
+    auth.logout(request)
+    return JsonResponse({})

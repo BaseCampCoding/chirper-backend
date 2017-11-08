@@ -292,3 +292,26 @@ class TestViews(TestCase):
         })
 
         self.assertEqual(self.client.session.get('_auth_user_id'), None)
+
+
+    def test_login_then_logout(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        response = self.client.post(
+            '/api/login/',
+            json.dumps({
+                'username': 'natec425',
+                'password': 'badpass'
+            }),
+            content_type='application/json')
+
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(self.client.session['_auth_user_id'], str(chirper.user.id))
+
+        response = self.client.post('/api/logout/')
+
+        self.assertEqual(response.status_code, 200)
+        
+        self.assertEqual(self.client.session.get('_auth_user_id'), None)

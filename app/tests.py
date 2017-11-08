@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth.models import User
+from django.contrib import auth
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.test import TestCase
@@ -215,3 +216,79 @@ class TestViews(TestCase):
     def test_feed_for_unknown_user_404s(self):
         response = self.client.get('/api/natec425/')
         self.assertEqual(response.status_code, 404)
+
+    def test_successful_login(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        response = self.client.post(
+            '/api/login/',
+            json.dumps({
+                'username': 'natec425',
+                'password': 'badpass'
+            }),
+            content_type='application/json')
+
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(self.client.session['_auth_user_id'], str(chirper.user.id))
+
+    def test_invalid_password_login(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        response = self.client.post(
+            '/api/login/',
+            json.dumps({
+                'username': 'natec425',
+                'password': 'incorrectpass'
+            }),
+            content_type='application/json')
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(),
+                         {'error': 'INVALID_USERNAME_PASSWORD'})
+
+        self.assertEqual(self.client.session.get('_auth_user_id'), None)
+
+    
+    def test_login_for_nonexistent_user(self):
+        response = self.client.post(
+            '/api/login/',
+            json.dumps({
+                'username': 'natec425',
+                'password': 'badpass'
+            }),
+            content_type='application/json')
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(),
+                         {'error': 'INVALID_USERNAME_PASSWORD'})
+
+        self.assertEqual(self.client.session.get('_auth_user_id'), None)
+
+        
+    def test_login_with_bad_payload(self):
+        response = self.client.post(
+            '/api/login/',
+            'this',
+            content_type='application/json')
+
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(self.client.session.get('_auth_user_id'), None)
+
+    def test_login_with_bad_data(self):
+        response = self.client.post(
+            '/api/login/',
+            json.dumps({
+                'username': 'foo'
+            }),
+            content_type='application/json')
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json(), {
+            'error': 'INVALID_DATA'
+        })
+
+        self.assertEqual(self.client.session.get('_auth_user_id'), None)

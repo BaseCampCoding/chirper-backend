@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_POST
+from django.contrib import auth
 
 from app.models import ChirperUser
 
@@ -94,3 +95,30 @@ def feed(request: HttpRequest, username: str) -> HttpResponse:
             'message': c.message
         } for c in chirps]
     }, 200)
+
+
+@require_POST
+def login(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'MALFORMED_REQUEST'
+        }, HTTPStatus.BAD_REQUEST)
+
+    try:
+        username = data['username']
+        password = data['password']
+    except KeyError:
+        return JsonResponse({
+            'error': 'INVALID_DATA'
+        }, HTTPStatus.UNPROCESSABLE_ENTITY)
+
+    user = auth.authenticate(request, username=username, password=password)
+    if user is not None:
+        auth.login(request, user)
+        return JsonResponse({}, HTTPStatus.CREATED)
+    else:
+        return JsonResponse({
+            'error': 'INVALID_USERNAME_PASSWORD'
+        }, HTTPStatus.UNAUTHORIZED)

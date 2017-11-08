@@ -7,7 +7,9 @@ url = "https://pypi.python.org/simple"
 
 [packages]
 
-Django = "*"
+django = "*"
+gunicorn = "*"
+dj-database-url = "*"
 
 
 [requires]

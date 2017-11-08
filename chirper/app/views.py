@@ -1,6 +1,7 @@
 import json
 from http import HTTPStatus
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
@@ -53,3 +54,43 @@ def signup(request: HttpRequest) -> HttpResponse:
         }, HTTPStatus.UNPROCESSABLE_ENTITY)
 
     return JsonResponse({}, HTTPStatus.CREATED)
+
+
+def feed(request: HttpRequest, username: str) -> HttpResponse:
+    try:
+        chirper = ChirperUser.find_by_username(username)
+    except ChirperUser.DoesNotExist:
+        return JsonResponse({}, HTTPStatus.NOT_FOUND)
+    paginator = Paginator(chirper.feed(), 25)
+    page = request.GET.get('page')
+    try:
+        chirps = paginator.page(page)
+    except PageNotAnInteger:
+        chirps = paginator.page(1)
+    except EmptyPage:
+        chirps = paginator.page(paginator.num_pages)
+    return JsonResponse({
+        'chirper': {
+            'name': chirper.name,
+            'username': chirper.username,
+            'description': chirper.description,
+            'location': chirper.location,
+            'website': chirper.website,
+            'joined': {
+                'month': chirper.joined.month,
+                'year': chirper.joined.year
+            }
+        },
+        'chirps': [{
+            'author': {
+                'name': c.author.name,
+                'username': c.author.username
+            },
+            'date': {
+                'month': c.date.month,
+                'day': c.date.day,
+                'year': c.date.year
+            },
+            'message': c.message
+        } for c in chirps]
+    }, 200)

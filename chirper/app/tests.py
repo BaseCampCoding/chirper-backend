@@ -1,9 +1,11 @@
-from django.test import TestCase
+import json
+
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from django.test import TestCase
+
 from app.models import ChirperUser
-from django.contrib.auth.models import User
-import json
 
 
 class TestModels(TestCase):
@@ -142,3 +144,74 @@ class TestViews(TestCase):
                 'email': ['Enter a valid email address.']
             }
         })
+
+    def test_empty_feed(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+        response = self.client.get('/natec425/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            'chirper': {
+                'name': 'Nate',
+                'username': 'natec425',
+                'joined': {
+                    'month': chirper.joined.month,
+                    'year': chirper.joined.year
+                },
+                'description': '',
+                'location': '',
+                'website': ''
+            },
+            'chirps': []
+        })
+
+    def test_nonempty_feed(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+        hello_chirp = chirper.chirp("Hello")
+        world_chirp = chirper.chirp("World")
+
+        response = self.client.get('/natec425/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            'chirper': {
+                'name': 'Nate',
+                'username': 'natec425',
+                'joined': {
+                    'month': chirper.joined.month,
+                    'year': chirper.joined.year
+                },
+                'description': '',
+                'location': '',
+                'website': ''
+            },
+            'chirps': [{
+                'author': {
+                    'name': chirper.name,
+                    'username': chirper.username
+                },
+                'date': {
+                    'month': hello_chirp.date.month,
+                    'day': hello_chirp.date.day,
+                    'year': hello_chirp.date.year
+                },
+                'message': hello_chirp.message
+            }, {
+                'author': {
+                    'name': chirper.name,
+                    'username': chirper.username
+                },
+                'date': {
+                    'month': world_chirp.date.month,
+                    'day': world_chirp.date.day,
+                    'year': world_chirp.date.year
+                },
+                'message': world_chirp.message
+            }]
+        })
+
+    def test_feed_for_unknown_user_404s(self):
+        response = self.client.get('/natec425/')
+        self.assertEqual(response.status_code, 404)

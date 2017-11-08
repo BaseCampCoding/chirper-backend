@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
@@ -43,11 +44,15 @@ class ChirperUser(models.Model):
         chirper.save()
         return chirper
 
+    @staticmethod
+    def find_by_username(username: str) -> 'ChirperUser':
+        return ChirperUser.objects.get(user__username=username)
+
     def chirp(self, message):
         '`ChirperUser.chirp` will create a new chirp with the provided message and `self` as the author'
         return Chirp.objects.create(author=self, message=message)
 
-    def feed(self):
+    def feed(self) -> QuerySet:
         '`ChirperUser.feed` returns a queryset representing all `Chirp`s that belong to `self`\'s feed.'
         return self.chirp_set.all().order_by('date')
 

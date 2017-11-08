@@ -67,7 +67,7 @@ class TestModels(TestCase):
 class TestViews(TestCase):
     def test_successful_signup(self):
         response = self.client.post(
-            '/signup/',
+            '/api/signup/',
             json.dumps({
                 'name': 'Nate',
                 'username': 'natec425',
@@ -81,7 +81,7 @@ class TestViews(TestCase):
 
     def test_missing_data_signup(self):
         response = self.client.post(
-            '/signup/',
+            '/api/signup/',
             json.dumps({
                 'username': 'natec425',
                 'email': 'foo@example.com',
@@ -102,7 +102,7 @@ class TestViews(TestCase):
                                      'badpass')
 
         response = self.client.post(
-            '/signup/',
+            '/api/signup/',
             json.dumps({
                 'name': 'Not Nate',
                 'username': 'natec425',
@@ -121,14 +121,14 @@ class TestViews(TestCase):
 
     def test_sending_malformed_json_signup(self):
         response = self.client.post(
-            '/signup/', 'this', content_type='text/plain')
+            '/api/signup/', 'this', content_type='text/plain')
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'error': 'MALFORMED_REQUEST'})
 
     def test_sending_with_bad_email_signup(self):
         response = self.client.post(
-            '/signup/',
+            '/api/signup/',
             json.dumps({
                 'name': 'nate',
                 'username': 'natec425',
@@ -148,7 +148,7 @@ class TestViews(TestCase):
     def test_empty_feed(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
-        response = self.client.get('/natec425/')
+        response = self.client.get('/api/natec425/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {
@@ -172,7 +172,7 @@ class TestViews(TestCase):
         hello_chirp = chirper.chirp("Hello")
         world_chirp = chirper.chirp("World")
 
-        response = self.client.get('/natec425/')
+        response = self.client.get('/api/natec425/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {
@@ -213,5 +213,5 @@ class TestViews(TestCase):
         })
 
     def test_feed_for_unknown_user_404s(self):
-        response = self.client.get('/natec425/')
+        response = self.client.get('/api/natec425/')
         self.assertEqual(response.status_code, 404)

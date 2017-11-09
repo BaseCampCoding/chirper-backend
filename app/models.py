@@ -52,6 +52,10 @@ class ChirperUser(models.Model):
     def find_by_username(username: str) -> 'ChirperUser':
         return ChirperUser.objects.get(user__username=username)
 
+    @staticmethod
+    def username_exists(username: str) -> bool:
+        return ChirperUser.objects.filter(user__username=username).exists()
+
     def chirp(self, message):
         '`ChirperUser.chirp` will create a new chirp with the provided message and `self` as the author'
         return Chirp.objects.create(author=self, message=message)

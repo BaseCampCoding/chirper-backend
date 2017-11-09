@@ -70,6 +70,14 @@ class TestModels(TestCase):
             transform=lambda x: x)
 
 
+    def test_username_does_exist(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        self.assertTrue(ChirperUser.username_exists('natec425'))
+        self.assertFalse(ChirperUser.username_exists('notnate'))
+
+
 class TestViews(TestCase):
     def test_successful_signup(self):
         response = self.client.post(

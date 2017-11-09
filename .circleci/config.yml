@@ -9,6 +9,8 @@ jobs:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
       - image: circleci/python:3.6.1
+        environment:
+          DEBUG: 1
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -31,7 +33,7 @@ jobs:
           name: install dependencies
           command: |
             python3 -m pip install --user pipenv
-            pipenv install
+            python3 -m pipenv install
 
       # - save_cache:
       #     paths:
@@ -42,7 +44,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            pipenv run python manage.py test
+            python3 -m pipenv run python manage.py test
 
       - store_artifacts:
           path: test-reports

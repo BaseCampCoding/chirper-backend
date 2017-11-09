@@ -37,8 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'raven.contrib.django.raven_compat',
 ]
+
+if not os.environ.get('DEBUG', False):
+    INSTALLED_APPS.append('raven.contrib.django.raven_compat')
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

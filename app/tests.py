@@ -321,3 +321,21 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(self.client.session.get('_auth_user_id'), None)
+
+    def test_username_exists(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        response = self.client.get(
+            '/api/username_exists/natec425/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'exists': True})
+
+
+    def test_username_doesnt_exists(self):
+        response = self.client.get(
+            '/api/username_exists/natec425/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'exists': False})

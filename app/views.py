@@ -128,3 +128,6 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return JsonResponse({})
+
+def username_exists(request, username):
+    return JsonResponse({'exists': ChirperUser.username_exists(username)})

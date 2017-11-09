@@ -42,11 +42,11 @@ class TestModels(TestCase):
 
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(ChirperUser.objects.count(), 0)
-    
+
     def test_username_cannot_have_at_sign(self):
         with self.assertRaises(ValidationError):
-            ChirperUser.signup('Nate', '@natec425', 'foo@example.com', 'badpass')
-
+            ChirperUser.signup('Nate', '@natec425', 'foo@example.com',
+                               'badpass')
 
     def test_chirper_user_can_chirp(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
@@ -234,9 +234,9 @@ class TestViews(TestCase):
             }),
             content_type='application/json')
 
-
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(self.client.session['_auth_user_id'], str(chirper.user.id))
+        self.assertEqual(self.client.session['_auth_user_id'],
+                         str(chirper.user.id))
 
     def test_invalid_password_login(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
@@ -256,7 +256,6 @@ class TestViews(TestCase):
 
         self.assertEqual(self.client.session.get('_auth_user_id'), None)
 
-    
     def test_login_for_nonexistent_user(self):
         response = self.client.post(
             '/api/login/',
@@ -272,12 +271,9 @@ class TestViews(TestCase):
 
         self.assertEqual(self.client.session.get('_auth_user_id'), None)
 
-        
     def test_login_with_bad_payload(self):
         response = self.client.post(
-            '/api/login/',
-            'this',
-            content_type='application/json')
+            '/api/login/', 'this', content_type='application/json')
 
         self.assertEqual(response.status_code, 400)
 
@@ -292,12 +288,9 @@ class TestViews(TestCase):
             content_type='application/json')
 
         self.assertEqual(response.status_code, 422)
-        self.assertEqual(response.json(), {
-            'error': 'INVALID_DATA'
-        })
+        self.assertEqual(response.json(), {'error': 'INVALID_DATA'})
 
         self.assertEqual(self.client.session.get('_auth_user_id'), None)
-
 
     def test_login_then_logout(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
@@ -311,12 +304,12 @@ class TestViews(TestCase):
             }),
             content_type='application/json')
 
-
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(self.client.session['_auth_user_id'], str(chirper.user.id))
+        self.assertEqual(self.client.session['_auth_user_id'],
+                         str(chirper.user.id))
 
         response = self.client.post('/api/logout/')
 
         self.assertEqual(response.status_code, 200)
-        
+
         self.assertEqual(self.client.session.get('_auth_user_id'), None)

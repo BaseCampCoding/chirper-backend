@@ -42,6 +42,11 @@ class TestModels(TestCase):
 
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(ChirperUser.objects.count(), 0)
+    
+    def test_username_cannot_have_at_sign(self):
+        with self.assertRaises(ValidationError):
+            ChirperUser.signup('Nate', '@natec425', 'foo@example.com', 'badpass')
+
 
     def test_chirper_user_can_chirp(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',

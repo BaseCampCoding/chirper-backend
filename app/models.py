@@ -13,6 +13,10 @@ class ChirperUser(models.Model):
     website = models.URLField(blank=True)
     joined = models.DateField(auto_now_add=True)
 
+    def clean(self):
+        if '@' in self.user.username:
+            raise ValidationError('Username cannot contain @')
+
     @property
     def username(self):
         return self.user.username

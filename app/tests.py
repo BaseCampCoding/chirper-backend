@@ -90,7 +90,9 @@ class TestViews(TestCase):
             content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertIn('key', json.loads(response.content.decode('utf-8')),)
+        self.assertIn(
+            'key',
+            json.loads(response.content.decode('utf-8')), )
 
     def test_missing_data_signup(self):
         response = self.client.post(
@@ -242,8 +244,8 @@ class TestViews(TestCase):
             content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(self.client.session['_auth_user_id'],
-                         str(chirper.user.id))
+        self.assertIn('key', json.loads(response.body.decode('utf-8')))
+        self.assertTrue(chirper.is_logged_in())
 
     def test_invalid_password_login(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
@@ -261,7 +263,7 @@ class TestViews(TestCase):
         self.assertEqual(response.json(),
                          {'error': 'INVALID_USERNAME_PASSWORD'})
 
-        self.assertEqual(self.client.session.get('_auth_user_id'), None)
+        self.assertFalse(chirper.is_logged_in())
 
     def test_login_for_nonexistent_user(self):
         response = self.client.post(
@@ -276,15 +278,11 @@ class TestViews(TestCase):
         self.assertEqual(response.json(),
                          {'error': 'INVALID_USERNAME_PASSWORD'})
 
-        self.assertEqual(self.client.session.get('_auth_user_id'), None)
-
     def test_login_with_bad_payload(self):
         response = self.client.post(
             '/api/login/', 'this', content_type='application/json')
 
         self.assertEqual(response.status_code, 400)
-
-        self.assertEqual(self.client.session.get('_auth_user_id'), None)
 
     def test_login_with_bad_data(self):
         response = self.client.post(
@@ -296,8 +294,6 @@ class TestViews(TestCase):
 
         self.assertEqual(response.status_code, 422)
         self.assertEqual(response.json(), {'error': 'INVALID_DATA'})
-
-        self.assertEqual(self.client.session.get('_auth_user_id'), None)
 
     def test_login_then_logout(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
@@ -312,14 +308,17 @@ class TestViews(TestCase):
             content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(self.client.session['_auth_user_id'],
-                         str(chirper.user.id))
+        self.assertTrue(chirper.is_logged_in())
 
-        response = self.client.post('/api/logout/')
+        response = self.client.post(
+            '/api/logout/',
+            json.dumps({
+                'key': chirper.session.key
+            }),
+            content_type='application/json')
 
         self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(self.client.session.get('_auth_user_id'), None)
+        self.assertFalse(chirper.is_logged_in())
 
     def test_username_exists(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
@@ -346,22 +345,20 @@ class TestViews(TestCase):
 
         self.assertEqual(response.status_code, 401)
 
-
     def test_chirp_with_logged_in_user(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
-        
-        self.client.login(username='natec425', password='badpass')
 
+        chirper.login()
 
         response = self.client.post(
             '/api/chirp/',
             json.dumps({
+                'key': chirper.session.key,
                 'message': 'Hello World'
             }),
             content_type='application/json', )
 
-        
         self.assertEqual(response.status_code, 201)
         self.assertEqual(chirper.chirp_set.count(), 1)
         self.assertEqual(chirper.chirp_set.first().message, 'Hello World')
@@ -370,7 +367,7 @@ class TestViews(TestCase):
 
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
-        
+
         self.client.login(username='natec425', password='badpass')
 
         response = self.client.post(
@@ -380,22 +377,17 @@ class TestViews(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-
     def test_chirp_without_message(self):
-
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
-        
-        self.client.login(username='natec425', password='badpass')
+
+        chirper.login()
 
         response = self.client.post(
             '/api/chirp/',
-            json.dumps({'foobar': 'baz'}),
+            json.dumps({
+                'key': chirper.session.key
+            }),
             content_type='application/json', )
-        
+
         self.assertEqual(response.status_code, 422)
-
-
-
-
-        

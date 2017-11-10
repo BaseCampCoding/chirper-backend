@@ -69,7 +69,6 @@ class TestModels(TestCase):
             chirper.feed(), [hello_chirp, game_over_chirp],
             transform=lambda x: x)
 
-
     def test_username_does_exist(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
@@ -326,16 +325,77 @@ class TestViews(TestCase):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
 
-        response = self.client.get(
-            '/api/username_exists/natec425/')
+        response = self.client.get('/api/username_exists/natec425/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'exists': True})
 
-
     def test_username_doesnt_exists(self):
-        response = self.client.get(
-            '/api/username_exists/natec425/')
+        response = self.client.get('/api/username_exists/natec425/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'exists': False})
+
+    def test_chirp_requires_login(self):
+        response = self.client.post(
+            '/api/chirp/',
+            json.dumps({
+                'message': 'Hello World'
+            }),
+            content_type='application/json', )
+
+        self.assertEqual(response.status_code, 401)
+
+
+    def test_chirp_with_logged_in_user(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+        
+        self.client.login(username='natec425', password='badpass')
+
+
+        response = self.client.post(
+            '/api/chirp/',
+            json.dumps({
+                'message': 'Hello World'
+            }),
+            content_type='application/json', )
+
+        
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(chirper.chirp_set.count(), 1)
+        self.assertEqual(chirper.chirp_set.first().message, 'Hello World')
+
+    def test_chirp_with_malformed_payload(self):
+
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+        
+        self.client.login(username='natec425', password='badpass')
+
+        response = self.client.post(
+            '/api/chirp/',
+            'this',
+            content_type='text/plain', )
+
+        self.assertEqual(response.status_code, 400)
+
+
+    def test_chirp_without_message(self):
+
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+        
+        self.client.login(username='natec425', password='badpass')
+
+        response = self.client.post(
+            '/api/chirp/',
+            json.dumps({'foobar': 'baz'}),
+            content_type='application/json', )
+        
+        self.assertEqual(response.status_code, 422)
+
+
+
+
+        

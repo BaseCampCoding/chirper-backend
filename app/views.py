@@ -131,3 +131,19 @@ def logout(request):
 
 def username_exists(request, username):
     return JsonResponse({'exists': ChirperUser.username_exists(username)})
+
+@require_POST
+def chirp(request):
+    if request.user.is_authenticated:
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            message = data['message']
+            request.user.chirperuser.chirp(message)
+        except json.JSONDecodeError:
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+        except KeyError:
+            return JsonResponse({}, status=HTTPStatus.UNPROCESSABLE_ENTITY)
+        else:
+            return JsonResponse({}, status=HTTPStatus.CREATED)
+    else:
+        return JsonResponse({}, status=HTTPStatus.UNAUTHORIZED)

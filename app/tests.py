@@ -90,7 +90,7 @@ class TestViews(TestCase):
             content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertJSONEqual(response.content.decode('utf-8'), {})
+        self.assertIn('key', json.loads(response.content.decode('utf-8')),)
 
     def test_missing_data_signup(self):
         response = self.client.post(

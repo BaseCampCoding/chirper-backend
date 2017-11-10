@@ -1,12 +1,12 @@
 import json
 
-from django.contrib.auth.models import User
 from django.contrib import auth
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.test import TestCase
 
-from app.models import ChirperUser
+from app.models import ChirperUser, Session
 
 
 class TestModels(TestCase):
@@ -75,6 +75,28 @@ class TestModels(TestCase):
 
         self.assertTrue(ChirperUser.username_exists('natec425'))
         self.assertFalse(ChirperUser.username_exists('notnate'))
+
+    def test_login_logout(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        self.assertFalse(chirper.is_logged_in())
+        chirper.login()
+        self.assertTrue(chirper.is_logged_in())
+        chirper.logout()
+        self.assertFalse(chirper.is_logged_in())
+
+    def test_login_logout_multiple_times(self):
+        chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+        
+        for _ in range(5):
+            self.assertFalse(chirper.is_logged_in())
+            chirper.login()
+            self.assertTrue(chirper.is_logged_in())
+            chirper.logout()
+
+
 
 
 class TestViews(TestCase):

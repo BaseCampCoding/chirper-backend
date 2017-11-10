@@ -1,10 +1,10 @@
+import secrets
+
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models.query import QuerySet
-from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
-from django.core.validators import MinLengthValidator
-
-import secrets
 
 
 class ChirperUser(models.Model):
@@ -66,6 +66,21 @@ class ChirperUser(models.Model):
         '`ChirperUser.feed` returns a queryset representing all `Chirp`s that belong to `self`\'s feed.'
         return self.chirp_set.all().order_by('date')
 
+    def login(self):
+        if self.is_logged_in():
+            self.session.delete()
+        Session.create(self)
+
+    def is_logged_in(self):
+        try:
+            return self.session.id is not None
+        except Session.DoesNotExist:
+            return False
+
+    def logout(self):
+        if self.is_logged_in():
+            self.session.delete()
+
 
 class Chirp(models.Model):
     message = models.CharField(max_length=280)
@@ -83,6 +98,6 @@ class Session(models.Model):
 
     @staticmethod
     def create(chirperuser):
-        return Session.object.create(
+        return Session.objects.create(
             chirperuser=chirperuser,
             key=secrets.token_hex(40), )

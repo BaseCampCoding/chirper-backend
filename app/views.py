@@ -54,7 +54,9 @@ def signup(request: HttpRequest) -> HttpResponse:
             'errors': e.message_dict
         }, HTTPStatus.UNPROCESSABLE_ENTITY)
 
-    return JsonResponse({}, HTTPStatus.CREATED)
+    chirper.login()
+
+    return JsonResponse({'key': chirper.session.key}, HTTPStatus.CREATED)
 
 
 def feed(request: HttpRequest, username: str) -> HttpResponse:

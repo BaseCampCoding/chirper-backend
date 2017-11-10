@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 
+import secrets
+
 
 class ChirperUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -73,3 +75,14 @@ class Chirp(models.Model):
     def __str__(self):
         return '{} ({}): {}'.format(self.author.username, self.date,
                                     self.message)
+
+
+class Session(models.Model):
+    chirperuser = models.OneToOneField(ChirperUser, on_delete=models.CASCADE)
+    key = models.CharField(max_length=40)
+
+    @staticmethod
+    def create(chirperuser):
+        return Session.object.create(
+            chirperuser=chirperuser,
+            key=secrets.token_hex(40), )

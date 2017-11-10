@@ -46,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app.middleware.load_user_from_json_key',
 ]
 
 ROOT_URLCONF = 'chirper.urls'

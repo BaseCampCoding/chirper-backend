@@ -117,7 +117,7 @@ def login(request):
     user = auth.authenticate(request, username=username, password=password)
     if user is not None:
         user.chirperuser.login()
-        return JsonResponse({}, HTTPStatus.CREATED)
+        return JsonResponse({'key': user.chirperuser.session.key}, HTTPStatus.CREATED)
     else:
         return JsonResponse({
             'error': 'INVALID_USERNAME_PASSWORD'

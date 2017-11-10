@@ -334,10 +334,10 @@ class TestViews(TestCase):
 
         response = self.client.post(
             '/api/logout/',
-            json.dumps({
-                'key': chirper.session.key
-            }),
+            response.content.decode('utf-8'),
             content_type='application/json')
+
+        chirper.refresh_from_db()
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(chirper.is_logged_in())
@@ -390,7 +390,7 @@ class TestViews(TestCase):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
 
-        self.client.login(username='natec425', password='badpass')
+        chirper.login()
 
         response = self.client.post(
             '/api/chirp/',

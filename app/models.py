@@ -27,6 +27,10 @@ class ChirperUser(models.Model):
     def email(self):
         return self.user.email
 
+    @property
+    def is_authenticated(self):
+        return self.is_logged_in()
+
     @staticmethod
     def signup(name, username, email, password):
         '''`ChirperUser.signup` creates and returns a new `ChirperUser` with the provided data.
@@ -55,6 +59,10 @@ class ChirperUser(models.Model):
         return ChirperUser.objects.get(user__username=username)
 
     @staticmethod
+    def find_by_key(key: str) -> 'ChirperUser':
+        return ChirperUser.objects.get(session__key=key)
+
+    @staticmethod
     def username_exists(username: str) -> bool:
         return ChirperUser.objects.filter(user__username=username).exists()
 
@@ -68,7 +76,7 @@ class ChirperUser(models.Model):
 
     def login(self):
         if self.is_logged_in():
-            self.session.delete()
+            self.logout()
         Session.create(self)
 
     def is_logged_in(self):
@@ -98,6 +106,12 @@ class Session(models.Model):
 
     @staticmethod
     def create(chirperuser):
-        return Session.objects.create(
+        chirperuser.session = Session.objects.create(
             chirperuser=chirperuser,
             key=secrets.token_hex(40), )
+
+        return chirperuser.session
+
+    @staticmethod
+    def delete_with_key(key):
+        Session.objects.get(key=key).chirperuser.logout()

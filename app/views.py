@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import auth
 
-from app.models import ChirperUser
+from app.models import ChirperUser, Session
 
 
 def JsonResponse(json_dumpable, status=HTTPStatus.OK):
@@ -128,7 +128,21 @@ def login(request):
 
 @require_POST
 def logout(request):
-    auth.logout(request)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'MALFORMED_REQUEST'
+        }, HTTPStatus.BAD_REQUEST)
+        key = data['key']
+    try:
+        key = data['key']
+    except KeyError:
+        return JsonResponse({
+            'error': 'INVALID_DATA'
+        }, HTTPStatus.UNPROCESSABLE_ENTITY)
+    
+    Session.delete_with_key(key)
     return JsonResponse({})
 
 def username_exists(request, username):
@@ -136,16 +150,17 @@ def username_exists(request, username):
 
 @require_POST
 def chirp(request):
-    if request.user.is_authenticated:
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            message = data['message']
-            request.user.chirperuser.chirp(message)
-        except json.JSONDecodeError:
-            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-        except KeyError:
-            return JsonResponse({}, status=HTTPStatus.UNPROCESSABLE_ENTITY)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        message = data['message']
+        
+        if request.user.is_authenticated:
+            request.user.chirp(message)
         else:
-            return JsonResponse({}, status=HTTPStatus.CREATED)
+            return JsonResponse({}, status=HTTPStatus.UNAUTHORIZED)
+    except json.JSONDecodeError:
+        return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+    except KeyError:
+        return JsonResponse({}, status=HTTPStatus.UNPROCESSABLE_ENTITY)
     else:
-        return JsonResponse({}, status=HTTPStatus.UNAUTHORIZED)
+        return JsonResponse({}, status=HTTPStatus.CREATED)

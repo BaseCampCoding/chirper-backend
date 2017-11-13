@@ -108,7 +108,7 @@ class Session(models.Model):
     def create(chirperuser):
         chirperuser.session = Session.objects.create(
             chirperuser=chirperuser,
-            key=secrets.token_hex(40), )
+            key=secrets.token_hex(20), )
 
         return chirperuser.session
 

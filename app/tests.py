@@ -75,13 +75,13 @@ class TestModels(TestCase):
         nate = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
 
-        not_nate = ChirperUser.signup('Not Nate', 'notnate', 'foo@example.com',
+        not_nate = ChirperUser.signup('Not Nate', 'not_nate', 'foo@example.com',
                                      'badpass')
 
         hey_chirp = nate.chirp('Hey @not_nate')
 
         self.assertQuerysetEqual(nate.feed(), [hey_chirp], transform=identity)
-        self.assertQuerysetEqual(not_nate.feed(), [hey_chirp])
+        self.assertQuerysetEqual(not_nate.feed(), [hey_chirp], transform=identity)
 
 
 

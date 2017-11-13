@@ -8,6 +8,8 @@ from django.test import TestCase
 
 from app.models import ChirperUser, Session
 
+def identity(x):
+    return x
 
 class TestModels(TestCase):
     def test_can_sign_up(self):
@@ -67,7 +69,21 @@ class TestModels(TestCase):
 
         self.assertQuerysetEqual(
             chirper.feed(), [hello_chirp, game_over_chirp],
-            transform=lambda x: x)
+            transform=identity)
+
+    def test_feed_with_chirping_at(self):
+        nate = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+
+        not_nate = ChirperUser.signup('Not Nate', 'notnate', 'foo@example.com',
+                                     'badpass')
+
+        hey_chirp = nate.chirp('Hey @not_nate')
+
+        self.assertQuerysetEqual(nate.feed(), [hey_chirp], transform=identity)
+        self.assertQuerysetEqual(not_nate.feed(), [hey_chirp])
+
+
 
     def test_username_does_exist(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',

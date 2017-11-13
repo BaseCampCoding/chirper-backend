@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models.query import QuerySet
+from django.db.models.signals import pre_save
 
 
 class ChirperUser(models.Model):
@@ -94,6 +95,15 @@ class Chirp(models.Model):
     message = models.CharField(max_length=280)
     author = models.ForeignKey(ChirperUser, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
+    chirping_at = models.ManyToManyField(
+        ChirperUser, related_name='chirping_at_set')
+
+    def save(self, *args, **kwargs):
+        super(Chirp, self).save(*args, **kwargs)
+        usernames = [w[1:] for w in self.message.split() if w.startswith('@')]
+        users = ChirperUser.objects.filter(user__username__in=usernames)
+        for user in users:
+            self.chirping_at.add(user)
 
     def __str__(self):
         return '{} ({}): {}'.format(self.author.username, self.date,

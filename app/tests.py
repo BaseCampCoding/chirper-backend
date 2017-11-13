@@ -112,6 +112,17 @@ class TestModels(TestCase):
             self.assertTrue(chirper.is_logged_in())
             chirper.logout()
 
+    def test_chirp_chirping_at(self):
+        nate = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
+                                     'badpass')
+                        
+        not_nate = ChirperUser.signup('Not Nate', 'not_nate', 'foo@example.com',
+                                     'badpass')
+
+        chirp = nate.chirp('Hello @not_nate')
+
+        self.assertQuerysetEqual(chirp.chirping_at.all(), [not_nate], transform=identity)
+
 
 
 

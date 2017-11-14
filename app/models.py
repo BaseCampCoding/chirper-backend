@@ -74,7 +74,7 @@ class ChirperUser(models.Model):
     def feed(self) -> QuerySet:
         '`ChirperUser.feed` returns a queryset representing all `Chirp`s that belong to `self`\'s feed.'
         return (self.chirp_set.all() |
-                self.chirping_at_set.all()).order_by('date')
+                self.chirping_at_set.all()).order_by('-date')
 
     def login(self):
         if self.is_logged_in():

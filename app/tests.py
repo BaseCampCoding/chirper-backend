@@ -8,8 +8,10 @@ from django.test import TestCase
 
 from app.models import ChirperUser, Session
 
+
 def identity(x):
     return x
+
 
 class TestModels(TestCase):
     def test_can_sign_up(self):
@@ -68,22 +70,20 @@ class TestModels(TestCase):
         game_over_chirp = chirper.chirp("Game Over")
 
         self.assertQuerysetEqual(
-            chirper.feed(), [hello_chirp, game_over_chirp],
-            transform=identity)
+            chirper.feed(), [game_over_chirp, hello_chirp], transform=identity)
 
     def test_feed_with_chirping_at(self):
         nate = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
-                                     'badpass')
+                                  'badpass')
 
         not_nate = ChirperUser.signup('Not Nate', 'not_nate', 'foo@example.com',
-                                     'badpass')
+                                      'badpass')
 
         hey_chirp = nate.chirp('Hey @not_nate')
 
         self.assertQuerysetEqual(nate.feed(), [hey_chirp], transform=identity)
-        self.assertQuerysetEqual(not_nate.feed(), [hey_chirp], transform=identity)
-
-
+        self.assertQuerysetEqual(
+            not_nate.feed(), [hey_chirp], transform=identity)
 
     def test_username_does_exist(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
@@ -105,7 +105,7 @@ class TestModels(TestCase):
     def test_login_logout_multiple_times(self):
         chirper = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
                                      'badpass')
-        
+
         for _ in range(5):
             self.assertFalse(chirper.is_logged_in())
             chirper.login()
@@ -114,16 +114,15 @@ class TestModels(TestCase):
 
     def test_chirp_chirping_at(self):
         nate = ChirperUser.signup('Nate', 'natec425', 'foo@example.com',
-                                     'badpass')
-                        
+                                  'badpass')
+
         not_nate = ChirperUser.signup('Not Nate', 'not_nate', 'foo@example.com',
-                                     'badpass')
+                                      'badpass')
 
         chirp = nate.chirp('Hello @not_nate')
 
-        self.assertQuerysetEqual(chirp.chirping_at.all(), [not_nate], transform=identity)
-
-
+        self.assertQuerysetEqual(
+            chirp.chirping_at.all(), [not_nate], transform=identity)
 
 
 class TestViews(TestCase):
@@ -257,22 +256,22 @@ class TestViews(TestCase):
                     'username': chirper.username
                 },
                 'date': {
-                    'month': hello_chirp.date.month,
-                    'day': hello_chirp.date.day,
-                    'year': hello_chirp.date.year
+                    'month': world_chirp.date.month,
+                    'day': world_chirp.date.day,
+                    'year': world_chirp.date.year
                 },
-                'message': hello_chirp.message
+                'message': world_chirp.message
             }, {
                 'author': {
                     'name': chirper.name,
                     'username': chirper.username
                 },
                 'date': {
-                    'month': world_chirp.date.month,
-                    'day': world_chirp.date.day,
-                    'year': world_chirp.date.year
+                    'month': hello_chirp.date.month,
+                    'day': hello_chirp.date.day,
+                    'year': hello_chirp.date.year
                 },
-                'message': world_chirp.message
+                'message': hello_chirp.message
             }]
         })
 

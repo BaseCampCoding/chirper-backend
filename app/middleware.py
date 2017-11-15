@@ -14,6 +14,8 @@ def load_user_from_json_key(get_response):
             request.user = AnonymousUser()
         except Exception as e:
             print(e)
+            # TODO: Report error to sentry
+            request.user = AnonymousUser()
         finally:
             return get_response(request)
 

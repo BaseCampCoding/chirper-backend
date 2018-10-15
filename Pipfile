@@ -24,8 +24,3 @@ python_version = "3.6.1"
 [dev-packages]
 
 bpython = "*"
-
-
-[pipenv]
-
-allow_prereleases = true
